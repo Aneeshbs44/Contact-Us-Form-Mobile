@@ -72,7 +72,16 @@ export default function ContactUsScreen() {
     // Handle form submission, you can perform validation or send data to a server
     console.log('Form submitted:', form);
     // Navigate to the next screen or perform other actions
+    setForm({
+      email:'',
+      phone:'',
+      questionDescription:'',
+      advantageCardNumber:'',
+
+      //to clear the screen
+    });
     navigation.navigate('Success');
+   
   };
 
   return (
@@ -130,7 +139,7 @@ export default function ContactUsScreen() {
             multiline
             numberOfLines={4}
             onChangeText={(questionDescription) => setForm({ ...form, questionDescription })}
-            placeholder="Describe your question in detail (max 250 words)"
+            placeholder="Describe your question in detail (max 250 characters)"
             placeholderTextColor="#6b7280"
             style={[
               styles.inputControl,
