@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Text, TextInput, TouchableOpacity, Alert, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
 export default function ContactUsScreen() {
   const navigation = useNavigation();
@@ -11,7 +12,7 @@ export default function ContactUsScreen() {
     questionDescription: '',
   });
 
-  const [emailError, setEmailError] = useState(false);
+  //const [emailError, setEmailError] = useState(false);
   const [phoneError, setPhoneError] = useState(false);
   const [advantageCardNumberError, setAdvantageCardNumberError] = useState(false);
   const [questionDescriptionError, setQuestionDescriptionError] = useState(false);
@@ -21,7 +22,7 @@ export default function ContactUsScreen() {
     return emailRegex.test(email);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     const validationErrors = [];
 
     // Check if all required fields are empty and throw an error
@@ -31,12 +32,12 @@ export default function ContactUsScreen() {
       // Check individual validations only if required fields are not empty and throw an error
 
       // Check if email is valid
-      if (form.email && !isValidEmail(form.email)) {
-        validationErrors.push('Please enter a valid email address.');
-        setEmailError(true);
-      } else {
-        setEmailError(false);
-      }
+      // if (form.email && !isValidEmail(form.email)) {
+      //   validationErrors.push('Please enter a valid email address.');
+      //   setEmailError(true);
+      // } else {
+      //   setEmailError(false);
+      // }
 
       // Check if phone number has 10 digits
       if (form.phone && form.phone.replace(/\D/g, '').length !== 10) {
@@ -66,12 +67,25 @@ export default function ContactUsScreen() {
     // Display accumulated validation errors; perform only when there are more than 1 error
     if (validationErrors.length > 0) {
       Alert.alert('Error', validationErrors.join('\n'));
-      return; // Stop submission if there are validation errors
+      
+
+      if (validationErrors.includes('Please enter a valid email address.')) {
+        navigation.navigate('Error');
+      }
+      
+      return;
     }
 
     // Handle form submission, you can perform validation or send data to a server
-    console.log('Form submitted:', form);
+    //console.log('Form submitted:', form);
     // Navigate to the next screen or perform other actions
+    try
+    {
+      //console.log(form);
+      //console.log(" before axiossss");
+      await axios.post('http://192.168.67.95:3000/api/submitForm',form);// dont remove 3000
+      console.log("Form submitted");
+    
     setForm({
       email:'',
       phone:'',
@@ -81,7 +95,19 @@ export default function ContactUsScreen() {
       //to clear the screen
     });
     navigation.navigate('Success');
-   
+  }
+  catch(error){
+    console.error("Invalid Email Address",error.message);
+    
+    if(error.response && error.response.status==400)
+    {
+      navigation.navigate('Error');
+    }
+    else{
+          Alert.alert("Error","Failed to submit the form please try again");
+    }
+   }
+  
   };
 
   return (
@@ -90,7 +116,7 @@ export default function ContactUsScreen() {
         <Text style={styles.message}>Hi, let us know how we can help!</Text>
 
         <View style={styles.input}>
-          <Text style={[styles.inputLabel, emailError && styles.errorLabel]}>Email(*)</Text>
+          <Text style={[styles.inputLabel]}>Email(*)</Text>
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
@@ -98,7 +124,7 @@ export default function ContactUsScreen() {
             onChangeText={(email) => setForm({ ...form, email })}
             placeholder="Enter your email"
             placeholderTextColor="#6b7280"
-            style={[styles.inputControl, emailError && styles.invalidInput]}
+            style={[styles.inputControl]}
             value={form.email}
           />
         </View>
@@ -139,7 +165,7 @@ export default function ContactUsScreen() {
             multiline
             numberOfLines={4}
             onChangeText={(questionDescription) => setForm({ ...form, questionDescription })}
-            placeholder="Describe your question in detail (max 250 characters)"
+            placeholder="Describe your question in detail (characters between 100 and 250)"
             placeholderTextColor="#6b7280"
             style={[
               styles.inputControl,
